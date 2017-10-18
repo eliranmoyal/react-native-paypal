@@ -58,14 +58,26 @@ RCT_EXPORT_METHOD(initializePaypalEnvironment:(int)environment
 
 #pragma mark React Exported Methods
 
-RCT_EXPORT_METHOD(preparePaymentOfAmount:(NSString *)amount
-                  ofCurrency:(NSString *)currencyCode
-                  withDescription:(NSString *)description)
+RCT_EXPORT_METHOD(preparePaymentOfAmount:(NSString *)subTotalAmount
+                  :(NSString *)currencyCode
+                  :(NSString *)description
+                  :(NSString *)comission
+                  :(NSString *)taxes)
 {
+    
+    NSDecimalNumber *subtotal = [NSDecimalNumber decimalNumberWithString:subTotalAmount];
+    NSDecimalNumber *shipping = [NSDecimalNumber decimalNumberWithString:comission];
+    NSDecimalNumber *tax = [NSDecimalNumber decimalNumberWithString:taxes];
+    PayPalPaymentDetails *paymentDetails = [PayPalPaymentDetails paymentDetailsWithSubtotal:subtotal
+                                                                               withShipping:shipping
+                                                                                    withTax:tax];
+    NSDecimalNumber *total = [[subtotal decimalNumberByAdding:shipping] decimalNumberByAdding:tax];
+    
   self.payment = [[PayPalPayment alloc] init];
-  [self.payment setAmount:[[NSDecimalNumber alloc] initWithString:amount]];
+  [self.payment setAmount:total];
   [self.payment setCurrencyCode:currencyCode];
   [self.payment setShortDescription:description];
+  [self.payment setPaymentDetails:paymentDetails];
 }
 
 
@@ -77,6 +89,7 @@ RCT_EXPORT_METHOD(prepareConfigurationForMerchant:(NSString *)merchantName
   [self.configuration setMerchantName:merchantName];
   [self.configuration setAcceptCreditCards:shouldAcceptCreditCards];
   [self.configuration setDefaultUserEmail:userEmail];
+    [self.configuration setMerchantUserAgreementURL:[NSURL URLWithString:@"https://www.moi.media/termsAndConditions.html"]];
 }
 
 RCT_EXPORT_METHOD(presentPaymentViewControllerForPreparedPurchase:(RCTResponseSenderBlock)flowCompletedCallback)
