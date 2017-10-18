@@ -89,7 +89,6 @@ RCT_EXPORT_METHOD(prepareConfigurationForMerchant:(NSString *)merchantName
   [self.configuration setMerchantName:merchantName];
   [self.configuration setAcceptCreditCards:shouldAcceptCreditCards];
   [self.configuration setDefaultUserEmail:userEmail];
-    [self.configuration setMerchantUserAgreementURL:[NSURL URLWithString:@"https://www.moi.media/termsAndConditions.html"]];
 }
 
 RCT_EXPORT_METHOD(presentPaymentViewControllerForPreparedPurchase:(RCTResponseSenderBlock)flowCompletedCallback)
