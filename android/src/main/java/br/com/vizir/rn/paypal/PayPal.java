@@ -15,6 +15,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.paypal.android.sdk.payments.PayPalAuthorization;
 import com.paypal.android.sdk.payments.PayPalConfiguration;
 import com.paypal.android.sdk.payments.PayPalPayment;
+import com.paypal.android.sdk.payments.PayPalPaymentDetails;
 import com.paypal.android.sdk.payments.PayPalService;
 import com.paypal.android.sdk.payments.PaymentActivity;
 import com.paypal.android.sdk.payments.PaymentConfirmation;
@@ -70,7 +71,9 @@ public class PayPal extends ReactContextBaseJavaModule {
 
     final String environment = payPalParameters.getString("environment");
     final String clientId = payPalParameters.getString("clientId");
-    final String price = payPalParameters.getString("price");
+    final String subTotalStr = payPalParameters.getString("subTotal");
+    final String commissionStr = payPalParameters.getString("commission");
+    final String taxesStr = payPalParameters.getString("taxes");
     final String currency = payPalParameters.getString("currency");
     final String description = payPalParameters.getString("description");
 
@@ -78,10 +81,15 @@ public class PayPal extends ReactContextBaseJavaModule {
       new PayPalConfiguration().environment(environment).clientId(clientId);
 
     startPayPalService(config);
-
+    BigDecimal commission = new BigDecimal(commissionStr);
+    BigDecimal subTotal = new BigDecimal(subTotalStr);
+    BigDecimal taxes = new BigDecimal(taxesStr);
+    BigDecimal total = new BigDecimal(subTotalStr).add(taxes).add(commission);
+    PayPalPaymentDetails payPalPaymentDetails = new PayPalPaymentDetails(commission,subTotal,taxes);
     PayPalPayment thingToBuy =
-      new PayPalPayment(new BigDecimal(price), currency, description,
-                        PayPalPayment.PAYMENT_INTENT_SALE);
+      new PayPalPayment(total, currency, description,
+                        PayPalPayment.PAYMENT_INTENT_SALE).paymentDetails(payPalPaymentDetails);
+
 
     Intent intent =
       new Intent(activityContext, PaymentActivity.class)
